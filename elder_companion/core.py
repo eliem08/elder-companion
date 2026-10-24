@@ -1,19 +1,47 @@
 """Care engine: medication reminders, adherence, check-ins, escalations, digest, plain-language rewriting."""
+
 from __future__ import annotations
 
+import itertools
 import re
 from dataclasses import dataclass, field
 from datetime import date, datetime, time, timedelta
 
 __all__ = ["Medication", "CheckIn", "CareLog", "simplify", "reading_ease"]
 
-RED_FLAGS = ["fell", "fall", "dizzy", "chest pain", "can't breathe", "cannot breathe", "confused", "bleeding", "lost", "scared"]
+RED_FLAGS = [
+    "fell",
+    "fall",
+    "dizzy",
+    "chest pain",
+    "can't breathe",
+    "cannot breathe",
+    "confused",
+    "bleeding",
+    "lost",
+    "scared",
+]
 JARGON = {
-    "authenticate": "sign in", "subsequently": "then", "utilize": "use", "approximately": "about",
-    "reschedule": "change the time of", "portal": "website", "commence": "start", "terminate": "end",
-    "prior to": "before", "in order to": "to", "assistance": "help", "medication": "medicine",
-    "physician": "doctor", "notification": "message", "insufficient": "not enough", "purchase": "buy",
-    "however": "but", "additional": "more", "residence": "home", "facilitate": "help",
+    "authenticate": "sign in",
+    "subsequently": "then",
+    "utilize": "use",
+    "approximately": "about",
+    "reschedule": "change the time of",
+    "portal": "website",
+    "commence": "start",
+    "terminate": "end",
+    "prior to": "before",
+    "in order to": "to",
+    "assistance": "help",
+    "medication": "medicine",
+    "physician": "doctor",
+    "notification": "message",
+    "insufficient": "not enough",
+    "purchase": "buy",
+    "however": "but",
+    "additional": "more",
+    "residence": "home",
+    "facilitate": "help",
 }
 
 
@@ -81,7 +109,7 @@ class CareLog:
             slots = [(d, t) for d in (day - timedelta(days=1), day) for t in m.times]
             statuses = [self._status(m, d, t, now) for d, t in slots]
             statuses = [s for s in statuses if s != "pending"]
-            for a, b in zip(statuses, statuses[1:]):
+            for a, b in itertools.pairwise(statuses):
                 if a in ("missed", "skipped") and b in ("missed", "skipped"):
                     alerts.append(f"{self.person} missed two doses in a row of {m.name}")
                     break
@@ -94,7 +122,7 @@ class CareLog:
             low = c.note.lower()
             flags = [w for w in RED_FLAGS if w in low]
             if flags:
-                alerts.append(f"{self.person} said: \"{c.note}\" (mentions {', '.join(flags)})")
+                alerts.append(f'{self.person} said: "{c.note}" (mentions {", ".join(flags)})')
         moods = [self.checkins.get(day - timedelta(days=i)) for i in range(3)]
         if all(m and m.mood <= 2 for m in moods):
             alerts.append(f"{self.person}'s mood has been low for 3 days")
@@ -106,8 +134,10 @@ class CareLog:
         lines = [f"Daily update for {self.person} - {day:%A %d %B}"]
         if c:
             mood_word = {1: "very low", 2: "low", 3: "okay", 4: "good", 5: "great"}[c.mood]
-            lines.append(f"Checked in at {c.at:%H:%M}. Mood: {mood_word}. Pain: {c.pain}/10. "
-                         f"{'Slept well' if c.slept_well else 'Slept poorly'}, {'has eaten' if c.ate else 'has not eaten yet'}.")
+            lines.append(
+                f"Checked in at {c.at:%H:%M}. Mood: {mood_word}. Pain: {c.pain}/10. "
+                f"{'Slept well' if c.slept_well else 'Slept poorly'}, {'has eaten' if c.ate else 'has not eaten yet'}."
+            )
             if c.note:
                 lines.append(f'They said: "{c.note}"')
         else:

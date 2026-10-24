@@ -40,8 +40,10 @@ class Tests(unittest.TestCase):
         self.assertIn("Mood: good", text)
 
     def test_simplify(self):
-        src = ("Please authenticate via the portal in order to reschedule your appointment with the physician, "
-               "subsequently you will receive a notification confirming the additional details of your visit.")
+        src = (
+            "Please authenticate via the portal in order to reschedule your appointment with the physician, "
+            "subsequently you will receive a notification confirming the additional details of your visit."
+        )
         out = simplify(src)
         self.assertIn("sign in", out)
         self.assertIn("doctor", out)

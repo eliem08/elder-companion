@@ -1,5 +1,7 @@
 # elder-companion
 
+[![CI](https://github.com/eliem08/elder-companion/actions/workflows/ci.yml/badge.svg)](https://github.com/eliem08/elder-companion/actions/workflows/ci.yml)
+
 > **A personal AI companion for older adults** (and other high-LTV niches).
 
 General-purpose assistants are built for 30-year-old power users. Older
@@ -36,3 +38,25 @@ elder-companion simplify "Please authenticate via the portal to reschedule your 
 - Voice-first app with wake-word-free "just talk" mode, large-text tablet UI
 - Pharmacy refill integration, doctor-visit prep notes
 - Scam screening on calls and texts (pairs with scam-shield)
+
+## Development
+
+Zero runtime dependencies; Python 3.10+.
+
+```bash
+python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -e ".[dev]"
+python -m unittest discover -s tests -t .           # unit + CLI smoke tests
+ruff check . && ruff format --check .               # lint + format
+```
+
+```
+elder_companion/core.py       domain logic (pure, importable, fully tested)
+elder_companion/__main__.py   CLI (`elder-companion ...` / `python -m elder_companion ...`)
+tests/                unit tests + generated CLI smoke tests
+```
+
+CI runs lint and tests on Ubuntu and Windows across Python 3.10, 3.12 and 3.13.
+Design, data model, trade-offs and production path: **[ARCHITECTURE.md](ARCHITECTURE.md)**.
+
+Part of the [agent-economy](https://github.com/eliem08/agent-economy) portfolio (idea #29).
