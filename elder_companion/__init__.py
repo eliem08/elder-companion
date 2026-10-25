@@ -1,4 +1,4 @@
-"""Personal AI companion for older adults and other high-LTV niches."""
+"""Elder Companion: A caring AI companion for older adults that keeps the family in the loop."""
 
 from .core import *
 

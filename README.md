@@ -1,17 +1,44 @@
-# elder-companion
+<!-- sell-kit:start -->
+# Elder Companion
 
 [![CI](https://github.com/eliem08/elder-companion/actions/workflows/ci.yml/badge.svg)](https://github.com/eliem08/elder-companion/actions/workflows/ci.yml)
 
-> **A personal AI companion for older adults** (and other high-LTV niches).
+> **A caring AI companion for older adults that keeps the family in the loop.**
 
-General-purpose assistants are built for 30-year-old power users. Older
-adults need something different: fewer features, bigger words, gentle
-routines, and a quiet line back to their family when something's off. It's a
-high-LTV niche — families pay monthly for peace of mind.
+**Who it's for:** Adult children caring for a parent who lives alone, and home-care agencies.
 
-This repo is the companion's care engine (the voice/chat UI sits on top).
+**The problem:** Missed medication, falls and loneliness go unnoticed until a crisis, and families can't check in every hour.
 
-## What the MVP does
+**What you get:** Medication reminders and adherence tracking, daily check-ins, red-flag escalations to family, and plain-language rewriting of confusing messages.
+
+## Quickstart
+
+Customers receive a release archive with the wheel and the examples. Python 3.10+ and no other dependencies.
+
+```bash
+pip install elder_companion-0.1.0-py3-none-any.whl
+elder-companion demo
+elder-companion simplify "Please authenticate via the portal in order to reschedule, subsequently you will receive a notification."
+```
+
+## Pricing
+
+Every plan starts with a 14-day free trial. Prices in USD, billed monthly unless noted.
+
+| Plan | Price | Includes |
+|---|---|---|
+| **Family** | $19 per month | 1 loved one; Reminders and check-ins; Daily family digest |
+| **Family Plus** | $39 per month | 2 loved ones; Instant red-flag alerts; Up to 5 family members |
+| **Care Agency** | $9 per client per month | Caseload dashboard; Escalation routing; Priority support |
+
+To start a trial or buy a plan, email **sales@YOUR-DOMAIN.com**.
+
+## Licence
+
+Proprietary. Copyright (c) 2026 eliem08. All rights reserved. Use requires a paid plan or an active trial; see [LICENSE](LICENSE).
+<!-- sell-kit:end -->
+
+## What it does
 
 - **Medication schedule** → today's reminders; record taken / skipped
 - **Adherence** per medication over N days
