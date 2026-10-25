@@ -20,7 +20,17 @@ RED_FLAGS = [
     "bleeding",
     "lost",
     "scared",
+    "help me",
+    "hurt",
+    "can't get up",
+    "cannot get up",
+    "911",
+    "ambulance",
+    "stroke",
+    "heart attack",
+    "fainted",
 ]
+APOSTROPHES = str.maketrans({"\u2019": "'", "\u2018": "'", "\u02bc": "'"})  # phones type curly quotes
 JARGON = {
     "authenticate": "sign in",
     "subsequently": "then",
@@ -78,6 +88,8 @@ class CareLog:
         self.doses[(med, day, at)] = "taken" if taken else "skipped"
 
     def record_checkin(self, c: CheckIn):
+        if not (isinstance(c.mood, int) and 1 <= c.mood <= 5) or not (isinstance(c.pain, int) and 0 <= c.pain <= 10):
+            raise ValueError(f"mood must be 1-5 and pain 0-10, got mood={c.mood!r} pain={c.pain!r}")
         self.checkins[c.day] = c
 
     def _status(self, med: Medication, day: date, t: time, now: datetime) -> str:
@@ -106,7 +118,7 @@ class CareLog:
     def escalations(self, day: date, now: datetime) -> list[str]:
         alerts = []
         for m in self.meds:
-            slots = [(d, t) for d in (day - timedelta(days=1), day) for t in m.times]
+            slots = [(d, t) for d in (day - timedelta(days=1), day) for t in sorted(m.times)]  # true dose order
             statuses = [self._status(m, d, t, now) for d, t in slots]
             statuses = [s for s in statuses if s != "pending"]
             for a, b in itertools.pairwise(statuses):
@@ -119,7 +131,7 @@ class CareLog:
         if c:
             if c.pain >= 7:
                 alerts.append(f"{self.person} reported pain {c.pain}/10")
-            low = c.note.lower()
+            low = c.note.translate(APOSTROPHES).lower()
             flags = [w for w in RED_FLAGS if w in low]
             if flags:
                 alerts.append(f'{self.person} said: "{c.note}" (mentions {", ".join(flags)})')

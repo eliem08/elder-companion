@@ -50,6 +50,28 @@ class Tests(unittest.TestCase):
         self.assertNotIn("subsequently", out.lower())
         self.assertGreater(reading_ease(out), reading_ease(src))
 
+    def test_red_flags_survive_phone_punctuation_and_cover_emergencies(self):
+        now = datetime(2026, 10, 24, 10, 0)
+        for note in ("I can\u2019t breathe well", "I fell and I can't get up", "please call 911", "my chest hurts"):
+            with self.subTest(note=note):
+                log = CareLog("Joe")
+                log.record_checkin(CheckIn(D, time(9), 3, 2, note=note))
+                self.assertTrue(any("said" in a for a in log.escalations(D, now)), note)
+
+    def test_checkin_values_are_validated(self):
+        for mood, pain in ((0, 2), (6, 2), (3, 11), (3, -1)):
+            with self.subTest(mood=mood, pain=pain), self.assertRaises(ValueError):
+                self.log.record_checkin(CheckIn(D, time(9), mood, pain))
+
+    def test_missed_in_a_row_uses_real_dose_order(self):
+        log = CareLog("Joe", [Medication("Metformin", "500 mg", [time(20), time(8)])])
+        log.record_dose("Metformin", D - timedelta(days=1), time(8), taken=True)
+        log.record_dose("Metformin", D - timedelta(days=1), time(20), taken=False)  # missed last night...
+        log.record_dose("Metformin", D, time(8), taken=False)  # ...and this morning: two in a row
+        log.record_dose("Metformin", D, time(20), taken=True)
+        alerts = log.escalations(D, datetime(2026, 10, 24, 23, 0))
+        self.assertTrue(any("in a row" in a for a in alerts), alerts)
+
 
 if __name__ == "__main__":
     unittest.main()
