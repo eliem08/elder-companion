@@ -1,0 +1,12 @@
+[
+ {
+  "op": "demo",
+  "payload": {}
+ },
+ {
+  "op": "simplify",
+  "payload": {
+   "text": "Please authenticate via the portal in order to reschedule, subsequently you will receive a notification."
+  }
+ }
+]

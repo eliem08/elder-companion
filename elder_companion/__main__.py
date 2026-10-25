@@ -28,12 +28,17 @@ def demo():
     print(log.digest(today, now))
 
 
-def _run(argv=None):
+def build_parser():
     ap = argparse.ArgumentParser(prog="elder-companion")
     sub = ap.add_subparsers(dest="cmd", required=True)
     sub.add_parser("demo")
     s = sub.add_parser("simplify")
     s.add_argument("text")
+    return ap
+
+
+def _run(argv=None):
+    ap = build_parser()
     a = ap.parse_args(argv)
     if a.cmd == "demo":
         demo()
