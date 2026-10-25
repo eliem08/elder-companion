@@ -46,7 +46,7 @@ Every plan starts with a 14-day free trial. Prices in USD, billed monthly unless
 | **Family Plus** | $39 per month | 2 loved ones; Instant red-flag alerts; Up to 5 family members |
 | **Care Agency** | $9 per client per month | Caseload dashboard; Escalation routing; Priority support |
 
-To start a trial or buy a plan, email **sales@YOUR-DOMAIN.com**.
+To start a trial or buy a plan, [request access](https://github.com/eliem08/elder-companion/issues/new?title=Elder%20Companion%20trial&labels=sales).
 
 ## Licence
 
