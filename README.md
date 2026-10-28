@@ -47,20 +47,23 @@ To sell self-serve, set four variables and point a Stripe webhook at `https://<y
 |---|---|
 | `STRIPE_SECRET_KEY` | `sk_live_...` |
 | `STRIPE_WEBHOOK_SECRET` | `whsec_...` |
-| `STRIPE_PRICES` | `team=price_123,business=price_456` |
+| `STRIPE_PRICES` | `family=price_123,family-plus=price_456` |
 | `PUBLIC_URL` | `https://elder-companion.example.com` |
 
-Buyers pick a plan on `/pricing`, pay on Stripe Checkout and see their API key once on the success page. Cancelling the subscription revokes the key. A selling server always requires a key.
+Buyers pick a plan on `/pricing`, pay on Stripe Checkout and see their API key once on the success page. Cancelling the subscription revokes the key. A selling server always requires a key. Self-serve monthly plans start with a 14-day free trial. Care Agency is contact-sales only (per-client billing cannot be sold by a checkout that fixes quantity at 1) and must not be added to `STRIPE_PRICES`. Copy `.env.example` to `.env` and fill in real values; never commit `.env`.
 
 ## Pricing
 
-Every plan starts with a 14-day free trial. Prices in USD, billed monthly unless noted.
+Every self-serve monthly plan starts with a 14-day free trial. Prices in USD, billed monthly unless noted.
+All plans unlock the same software in this release; higher tiers add licence scope and support,
+not gated features — the code gates nothing by plan, and reminders, check-ins, red-flag
+escalations, and the daily digest are available on every plan.
 
 | Plan | Price | Includes |
 |---|---|---|
-| **Family** | $19 per month | 1 loved one; Reminders and check-ins; Daily family digest |
-| **Family Plus** | $39 per month | 2 loved ones; Instant red-flag alerts; Up to 5 family members |
-| **Care Agency** | $9 per client per month | Caseload dashboard; Escalation routing; Priority support |
+| **Family** | $19 per month | Reminders and check-ins; Daily family digest |
+| **Family Plus** | $39 per month | Everything in Family |
+| **Care Agency** | $9 per client per month | Everything in Family; billed per client on a custom quote (contact sales, not self-serve) |
 
 To start a trial or buy a plan, [request access](https://github.com/eliem08/elder-companion/issues/new?title=Elder%20Companion%20trial&labels=sales).
 
@@ -96,6 +99,7 @@ elder-companion simplify "Please authenticate via the portal to reschedule your 
 - Voice-first app with wake-word-free "just talk" mode, large-text tablet UI
 - Pharmacy refill integration, doctor-visit prep notes
 - Scam screening on calls and texts (pairs with scam-shield)
+- Plan-differentiated features: loved-one limits, family seats, caseload dashboard, agency escalation routing
 
 ## Development
 
