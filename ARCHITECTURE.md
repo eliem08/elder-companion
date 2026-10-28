@@ -18,6 +18,9 @@ flowchart LR
   Care -.-> Pharmacy[Refills] & Clinician[Visit prep]
   Companion --> Shield[scam-shield]
 ```
+Note: the Companion app, Family app / SMS delivery, Pharmacy, Clinician, and scam-shield
+links are roadmap, not shipped — this release is the care engine (schedules, check-ins,
+escalations, digest, rewriter) behind a CLI and web API.
 
 ## 3. Escalation rules
 - two consecutive missed or skipped doses of the same medication (across yesterday and today)
@@ -34,11 +37,12 @@ flowchart LR
 - **The digest is written for adult children,** not clinicians: one short message a day, plus
   "needs attention" only when there's a reason.
 
-## 5. Production architecture
+## 5. Future production architecture (not shipped)
 A mobile/tablet app (offline reminders via local notifications), a care-engine service
 (Postgres: schedules, events, check-ins), a scheduler for deadline checks (per-user timezone), and
 notification routing (push, SMS fallback). Data is HIPAA-grade: encryption, audit logs and
-caregiver consent records.
+caregiver consent records. None of this is in this release: the shipped product is the
+care engine plus CLI and web API described above.
 
 ## 6. Risks
 This is not a medical device. Wording avoids clinical claims, and emergencies route to calling
