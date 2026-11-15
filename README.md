@@ -17,8 +17,9 @@ Customers receive a release archive with the wheel and the examples. Python 3.10
 
 ```bash
 pip install elder_companion-0.1.0-py3-none-any.whl
-elder-companion demo
-elder-companion simplify "Please authenticate via the portal in order to reschedule, subsequently you will receive a notification."
+elder-companion person-add Rose --store care.json
+elder-companion med-add Rose Lisinopril --dose "10 mg" --times 08:00 20:00 --store care.json
+elder-companion reminders Rose --store care.json
 ```
 
 ## Web app and API
@@ -33,7 +34,7 @@ docker build -t elder-companion . && docker run -p 8000:8000 -e API_KEYS=sk_... 
 
 Every API call needs `Authorization: Bearer <key>` once any key exists; a server on a public address refuses to start without one. Calls are rate-limited per key (60/min, `--rate`) and metered: `elder-companion-web usage` prints calls per key for billing.
 
-Endpoints: `POST /api/demo`, `POST /api/simplify`, plus `GET /healthz` and `GET /api/spec` (machine-readable field list).
+Endpoints: `POST /api/demo`, `POST /api/simplify`, `POST /api/person-add`, `POST /api/med-add`, `POST /api/reminders`, `POST /api/dose`, `POST /api/checkin`, `POST /api/alerts`, `POST /api/digest`, `POST /api/adherence`, plus `GET /healthz` and `GET /api/spec` (machine-readable field list).
 Files are sent as `{"name": ..., "content": ...}`, folders as `{"files": [...]}` or a base64 zip.
 
 ## Deploy and sell

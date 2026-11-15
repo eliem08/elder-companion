@@ -5,6 +5,7 @@ import sys
 from datetime import date, datetime, time, timedelta
 
 from .core import CareLog, CheckIn, Medication, reading_ease, simplify
+from .ops import OPS, add_ops, run_ops
 
 
 def demo():
@@ -34,12 +35,15 @@ def build_parser():
     sub.add_parser("demo")
     s = sub.add_parser("simplify")
     s.add_argument("text")
+    add_ops(sub)
     return ap
 
 
 def _run(argv=None):
     ap = build_parser()
     a = ap.parse_args(argv)
+    if a.cmd in OPS:
+        return run_ops(a)
     if a.cmd == "demo":
         demo()
         return 0

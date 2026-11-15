@@ -48,8 +48,9 @@
     <h2>Quickstart</h2>
     <p>Python 3.10+, no other dependencies. Your release archive includes the wheel and examples.</p>
     <pre><code>pip install elder_companion-0.1.0-py3-none-any.whl
-elder-companion demo
-elder-companion simplify &quot;Please authenticate via the portal in order to reschedule, subsequently you will receive a notification.&quot;</code></pre>
+elder-companion person-add Rose --store care.json
+elder-companion med-add Rose Lisinopril --dose &quot;10 mg&quot; --times 08:00 20:00 --store care.json
+elder-companion reminders Rose --store care.json</code></pre>
   </section>
   <section>
     <h2>Pricing</h2>

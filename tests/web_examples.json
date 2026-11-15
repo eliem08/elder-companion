@@ -1,5 +1,52 @@
 [
  {
+  "op": "person-add",
+  "payload": {
+   "person": "Rose",
+   "checkin_deadline": "11:00"
+  }
+ },
+ {
+  "op": "med-add",
+  "payload": {
+   "person": "Rose",
+   "medicine": "Lisinopril",
+   "dose": "10 mg",
+   "times": [
+    "08:00",
+    "20:00"
+   ]
+  }
+ },
+ {
+  "op": "reminders",
+  "payload": {
+   "person": "Rose"
+  }
+ },
+ {
+  "op": "checkin",
+  "payload": {
+   "person": "Rose",
+   "mood": 4,
+   "pain": 1,
+   "note": "Feeling fine today"
+  }
+ },
+ {
+  "op": "digest",
+  "payload": {
+   "person": "Rose"
+  }
+ },
+ {
+  "op": "adherence",
+  "payload": {
+   "person": "Rose",
+   "days": 7
+  }
+ },
+ {
   "op": "demo",
   "payload": {}
  },

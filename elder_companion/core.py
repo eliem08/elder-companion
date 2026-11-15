@@ -60,6 +60,7 @@ class Medication:
     name: str
     dose: str
     times: list  # list[time]
+    since: date | None = None  # doses before the medicine was prescribed are never "missed"
 
 
 @dataclass
@@ -96,6 +97,8 @@ class CareLog:
         s = self.doses.get((med.name, day, t))
         if s:
             return s
+        if med.since and day < med.since:
+            return "pending"
         due = datetime.combine(day, t)
         return "missed" if now > due + timedelta(hours=2) else "pending"
 
