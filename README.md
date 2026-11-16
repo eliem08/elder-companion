@@ -55,15 +55,18 @@ Buyers pick a plan on `/pricing`, pay on Stripe Checkout and see their API key o
 
 ## Pricing
 
-Every plan starts with a 14-day free trial. Prices in USD, billed monthly unless noted.
+Monthly plans start with a 14-day free trial. Prices in USD, billed monthly unless noted.
 
 | Plan | Price | Includes |
 |---|---|---|
 | **Family** | $19 per month | 1 loved one; Reminders and check-ins; Daily family digest |
-| **Family Plus** | $39 per month | 2 loved ones; Instant red-flag alerts; Up to 5 family members |
-| **Care Agency** | $9 per client per month | Caseload dashboard; Escalation routing; Priority support |
+| **Family Plus** | $39 per month | 2 loved ones; Red-flag alerts to a family webhook; Dose adherence report |
+| **Care Agency** | $9 per client per month | Multiple clients in one store; Priority support |
 
 To start a trial or buy a plan, [request access](https://github.com/eliem08/elder-companion/issues/new?title=Elder%20Companion%20trial&labels=sales).
+
+Plan note: every plan runs the same software, and every API key unlocks all of it. Seat, agent and volume
+limits are licence terms; the code does not enforce them. Support, SLA and done-for-you items are services.
 
 ## Licence
 
