@@ -486,4 +486,24 @@ SPEC = {
             "id": "adherence",
         },
     ],
+    "plans": [
+        {
+            "key": "family",
+            "name": "Family",
+            "price": "$19 per month",
+            "features": ["1 loved one", "Reminders and check-ins", "Daily family digest"],
+        },
+        {
+            "key": "family-plus",
+            "name": "Family Plus",
+            "price": "$39 per month",
+            "features": ["2 loved ones", "Red-flag alerts to a family webhook", "Dose adherence report"],
+        },
+        {
+            "key": "care-agency",
+            "name": "Care Agency",
+            "price": "$9 per client per month",
+            "features": ["Multiple clients in one store", "Priority support"],
+        },
+    ],
 }
