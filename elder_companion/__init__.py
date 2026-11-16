@@ -1,4 +1,4 @@
-"""Elder Companion: A caring AI companion for older adults that keeps the family in the loop."""
+"""Elder Companion: Medicine reminders and daily check-ins for older adults, with alerts that keep the family in the loop."""
 
 from .core import *
 

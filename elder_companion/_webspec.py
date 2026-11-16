@@ -2,7 +2,7 @@
 
 SPEC = {
     "name": "Elder Companion",
-    "tagline": "A caring AI companion for older adults that keeps the family in the loop.",
+    "tagline": "Medicine reminders and daily check-ins for older adults, with alerts that keep the family in the loop.",
     "cli": "elder-companion",
     "state": {},
     "ops": [

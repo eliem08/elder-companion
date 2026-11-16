@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "elder-companion"
 version = "0.1.0"
-description = "A caring AI companion for older adults that keeps the family in the loop."
+description = "Medicine reminders and daily check-ins for older adults, with alerts that keep the family in the loop."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "Proprietary" }

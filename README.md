@@ -3,7 +3,7 @@
 
 [![CI](https://github.com/eliem08/elder-companion/actions/workflows/ci.yml/badge.svg)](https://github.com/eliem08/elder-companion/actions/workflows/ci.yml)
 
-> **A caring AI companion for older adults that keeps the family in the loop.**
+> **Medicine reminders and daily check-ins for older adults, with alerts that keep the family in the loop.**
 
 **Who it's for:** Adult children caring for a parent who lives alone, and home-care agencies.
 
