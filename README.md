@@ -9,7 +9,7 @@
 
 **The problem:** Missed medication, falls and loneliness go unnoticed until a crisis, and families can't check in every hour.
 
-**What you get:** Medication reminders and adherence tracking, daily check-ins, red-flag escalations to family, and plain-language rewriting of confusing messages.
+**What you get:** Medication reminders and daily check-ins by text message with simple replies, adherence tracking, red-flag alerts to family by text, email and webhook, and plain-language rewriting of confusing messages.
 
 ## Quickstart
 
@@ -19,7 +19,7 @@ Customers receive a release archive with the wheel and the examples. Python 3.10
 pip install elder_companion-0.1.0-py3-none-any.whl
 elder-companion person-add Rose --store care.json
 elder-companion med-add Rose Lisinopril --dose "10 mg" --times 08:00 20:00 --store care.json
-elder-companion reminders Rose --store care.json
+elder-companion contact Rose --phone +14155550123 --family-email kid@example.com --store care.json
 ```
 
 ## Web app and API
@@ -34,7 +34,7 @@ docker build -t elder-companion . && docker run -p 8000:8000 -e API_KEYS=sk_... 
 
 Every API call needs `Authorization: Bearer <key>` once any key exists; a server on a public address refuses to start without one. Calls are rate-limited per key (60/min, `--rate`) and metered: `elder-companion-web usage` prints calls per key for billing.
 
-Endpoints: `POST /api/demo`, `POST /api/simplify`, `POST /api/person-add`, `POST /api/med-add`, `POST /api/reminders`, `POST /api/dose`, `POST /api/checkin`, `POST /api/alerts`, `POST /api/digest`, `POST /api/adherence`, plus `GET /healthz` and `GET /api/spec` (machine-readable field list).
+Endpoints: `POST /api/demo`, `POST /api/simplify`, `POST /api/person-add`, `POST /api/contact`, `POST /api/send-due`, `POST /api/med-add`, `POST /api/reminders`, `POST /api/dose`, `POST /api/checkin`, `POST /api/alerts`, `POST /api/digest`, `POST /api/adherence`, plus `GET /healthz` and `GET /api/spec` (machine-readable field list).
 Files are sent as `{"name": ..., "content": ...}`, folders as `{"files": [...]}` or a base64 zip.
 
 ## Deploy and sell
@@ -61,7 +61,7 @@ Monthly plans start with a 14-day free trial. Prices in USD, billed monthly unle
 | Plan | Price | Includes |
 |---|---|---|
 | **Family** | $19 per month | 1 loved one; Reminders and check-ins; Daily family digest |
-| **Family Plus** | $39 per month | 2 loved ones; Red-flag alerts to a family webhook; Dose adherence report |
+| **Family Plus** | $39 per month | 2 loved ones; Reminders and check-ins by text message; Red-flag alerts by text, email and webhook; Dose adherence report |
 | **Care Agency** | $9 per client per month | Multiple clients in one store; Priority support |
 
 To start a trial or buy a plan, [request access](https://github.com/eliem08/elder-companion/issues/new?title=Elder%20Companion%20trial&labels=sales).
@@ -86,6 +86,8 @@ Proprietary. Copyright (c) 2026 eliem08. All rights reserved. Use requires a pai
   - mood ≤ 2 for 3 days running, or pain ≥ 7
   - worrying words in free text ("fell", "dizzy", "chest pain", "can't breathe")
 - **Family digest**: one plain-English daily summary for adult children
+- **By text message**: the person gets their reminders and the morning check-in as texts, and answers
+  with TAKEN, SKIP, a number, or HELP. The family gets alerts by text, email and webhook (see below).
 - **Plain-language rewriter** for anything the companion reads aloud:
   jargon → everyday words, long sentences split, Flesch reading-ease score
 
@@ -96,6 +98,36 @@ pip install -e .
 elder-companion demo
 elder-companion simplify "Please authenticate via the portal to reschedule your appointment, subsequently..."
 ```
+
+## Reaching the person and the family
+
+```bash
+elder-companion contact Rosa --phone +14155550123 --family-phone +14155550999 --family-email kid@example.com
+elder-companion send-due Rosa      # run every 5-10 minutes from cron, a scheduler, or POST /api/send-due
+```
+
+- **Each `send-due` run:**
+  - texts any medicine that came due in the last 20 minutes (each dose once) and asks for TAKEN or SKIP;
+  - asks "How are you feeling, 1 to 5?" two hours before the check-in deadline, then asks about pain from 0 to
+    10;
+  - sends each new red-flag alert (missed doses, no check-in, low mood, high pain, worrying words) to the
+    family once, by text, email and webhook.
+- **Replies:**
+  - They come back to `POST /twilio/inbound` on the hosted server. Set the Twilio number's "A message comes
+    in" webhook to `https://<your-host>/twilio/inbound`.
+  - Every request must carry Twilio's signature (HMAC with your auth token), or it is refused.
+  - Replying HELP alerts the family at once.
+- **Settings:**
+  - Texting: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM` and `PUBLIC_URL`.
+  - Email: `SMTP_HOST`, `SMTP_PORT` (587), `SMTP_USER`, `SMTP_PASSWORD` and `SMTP_FROM`.
+  - `CARE_TIMEZONE` (such as `America/Chicago`) makes 08:00 the person's 08:00 on a server that runs on UTC.
+- **Nothing pretends:** without the settings, every result says "not texted" or "not emailed" instead of
+  pretending.
+- **Not tested live yet:** these paths are tested with stand-ins for Twilio and the mail server, but not yet
+  against live accounts. In the US, texting from an app number needs the operator to register it with
+  carriers (10DLC).
+- **Not a medical device:** it is a reminder and check-in tool, not a medical device and not an emergency
+  service.
 
 ## Roadmap
 

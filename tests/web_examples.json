@@ -19,6 +19,22 @@
   }
  },
  {
+  "op": "contact",
+  "payload": {
+   "person": "Rose",
+   "phone": "+14155550123",
+   "family_email": "kid@example.com"
+  }
+ },
+ {
+  "op": "send-due",
+  "payload": {
+   "person": "Rose",
+   "now": "2026-11-18T08:05",
+   "window": 20
+  }
+ },
+ {
   "op": "reminders",
   "payload": {
    "person": "Rose"

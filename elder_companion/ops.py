@@ -2,6 +2,8 @@
 
 Set ELDER_COMPANION_WEBHOOK to an https Slack/Discord/any webhook and `alerts --send` / `digest --send`
 deliver to the family as well as printing. The URL is operator configuration, never a request parameter.
+With a phone number (`contact`) and Twilio configured, `send-due` texts the person their reminders and the
+morning check-in question, and their replies come back through /twilio/inbound (see sms.py).
 This is a reminder and check-in tool, not a medical device and not an emergency service.
 """
 
@@ -11,8 +13,20 @@ import urllib.request
 from datetime import date, datetime, time, timedelta
 
 from .core import CareLog, CheckIn, Medication
+from .sms import contact, digits, send_due, tell_family
 
-OPS = ("person-add", "med-add", "reminders", "dose", "checkin", "alerts", "digest", "adherence")
+OPS = (
+    "person-add",
+    "contact",
+    "med-add",
+    "reminders",
+    "send-due",
+    "dose",
+    "checkin",
+    "alerts",
+    "digest",
+    "adherence",
+)
 
 
 class CareError(ValueError):
@@ -26,9 +40,26 @@ def _time(text: str) -> time:
         raise CareError(f"{text!r} is not a time like 08:00") from None
 
 
+def local_now() -> datetime:
+    """Now, in the person's time zone (CARE_TIMEZONE, e.g. America/Chicago), so 08:00 means their 08:00 even
+    on a server that runs on UTC. Without the setting, the server's own clock is used."""
+    tz = os.environ.get("CARE_TIMEZONE", "").strip()
+    if not tz:
+        return datetime.now()
+    from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+
+    try:
+        return datetime.now(ZoneInfo(tz)).replace(tzinfo=None)
+    except (ZoneInfoNotFoundError, ValueError):
+        raise CareError(
+            f"CARE_TIMEZONE={tz!r} is not a time zone this server knows; use a name like America/Chicago "
+            "(on Windows, pip install tzdata)"
+        ) from None
+
+
 def _now(text) -> datetime:
     if not text:
-        return datetime.now()
+        return local_now()
     try:
         return datetime.fromisoformat(text)
     except ValueError:
@@ -60,6 +91,7 @@ def load(path: str) -> dict[str, CareLog]:
         for c in p["checkins"]:
             day = date.fromisoformat(c.pop("day"))
             log.checkins[day] = CheckIn(day, time.fromisoformat(c.pop("at")), **c)
+        log.contact = dict(p.get("contact", {}))
         people[name] = log
     return people
 
@@ -82,6 +114,7 @@ def save(people: dict[str, CareLog], path: str):
             "checkins": [
                 {**c.__dict__, "day": c.day.isoformat(), "at": c.at.isoformat("minutes")} for c in log.checkins.values()
             ],
+            "contact": getattr(log, "contact", {}),
         }
     tmp = f"{path}.tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
@@ -114,6 +147,17 @@ def add_ops(sub):
     p = sub.add_parser("person-add", help="start a care log for someone")
     p.add_argument("person")
     p.add_argument("--checkin-deadline", default="11:00", help="alert the family if no check-in by this time")
+    p = sub.add_parser("contact", help="phone numbers and email for the person and their family")
+    p.add_argument("person")
+    p.add_argument("--phone", help="the person's mobile, E.164 like +14155550100 (reminders go here)")
+    p.add_argument("--family-phone", help="a family member's mobile (alerts go here)")
+    p.add_argument("--family-email", help="where the daily digest and alerts are emailed")
+    p = sub.add_parser(
+        "send-due", help="text due reminders and the check-in question; alert the family (run every few minutes)"
+    )
+    p.add_argument("person")
+    p.add_argument("--now", help=argparse_now_help())
+    p.add_argument("--window", type=int, default=20, help="minutes after a dose time it can still be sent")
     p = sub.add_parser("med-add", help="add a medicine and when it is taken")
     p.add_argument("person")
     p.add_argument("medicine")
@@ -175,14 +219,35 @@ def _run(people, a, env, post) -> int:
         print(f"care log started for {a.person}; check-in expected by {a.checkin_deadline}")
         return 0
     log: CareLog = people[a.person]
+    if c == "contact":
+        info = contact(log)
+        for field_name in ("phone", "family_phone"):
+            v = getattr(a, field_name)
+            if v is not None:
+                if v and not (v.strip().startswith("+") and 8 <= len(digits(v)) <= 15):
+                    raise CareError(f"{v!r} is not a phone number like +14155550100")
+                info[field_name] = v.strip()
+        if a.family_email is not None:
+            if a.family_email and "@" not in a.family_email:
+                raise CareError(f"{a.family_email!r} is not an email address")
+            info["family_email"] = a.family_email.strip()
+        shown = {k: info.get(k) or "-" for k in ("phone", "family_phone", "family_email")}
+        print(f"{a.person}: " + ", ".join(f"{k.replace('_', ' ')} {v}" for k, v in shown.items()))
+        return 0
+    if c == "send-due":
+        if not 1 <= a.window <= 240:
+            raise CareError("--window must be between 1 and 240 minutes")
+        for line in send_due(log, _now(a.now), env, post, webhook=lambda t: deliver(t, env, post), window_min=a.window):
+            print(line)
+        return 0
     if c == "med-add":
         if any(m.name == a.medicine for m in log.meds):
             raise CareError(f"{a.medicine} is already on {a.person}'s list")
-        since = date.fromisoformat(a.since) if a.since else date.today()
+        since = date.fromisoformat(a.since) if a.since else local_now().date()
         log.meds.append(Medication(a.medicine, a.dose, sorted(_time(t) for t in a.times), since))
         print(f"{a.medicine} ({a.dose}) at {', '.join(a.times)}")
     elif c == "reminders":
-        rows = log.reminders(date.today())
+        rows = log.reminders(local_now().date())
         for t, text in rows:
             print(f"{t:%H:%M}  {text}")
         if not rows:
@@ -194,7 +259,7 @@ def _run(people, a, env, post) -> int:
             raise CareError(f"{a.medicine} is not on {a.person}'s list")
         if at not in med.times:
             raise CareError(f"{a.medicine} is scheduled at {', '.join(f'{t:%H:%M}' for t in med.times)}, not {a.at}")
-        day = date.fromisoformat(a.day) if a.day else date.today()
+        day = date.fromisoformat(a.day) if a.day else local_now().date()
         log.record_dose(a.medicine, day, at, not a.skipped)
         print(f"{a.medicine} {a.at} on {day}: {'skipped' if a.skipped else 'taken'}")
     elif c == "checkin":
@@ -221,12 +286,13 @@ def _run(people, a, env, post) -> int:
             alerts, text = True, log.digest(now.date(), now)
         print(text)
         if a.send and alerts:
-            print(deliver(text, env, post))
+            for line in tell_family(log, text, env, post, webhook=lambda t: deliver(t, env, post)):
+                print(line)
         return 1 if c == "alerts" and alerts else 0
     else:
         if a.days < 1:
             raise CareError("days must be at least 1")
-        now = datetime.now()
+        now = local_now()
         rates = log.adherence(now.date() - timedelta(days=a.days - 1), now.date(), now)
         for med, rate in rates.items():
             print(f"{med:<20}{'no doses due yet' if rate is None else f'{rate:.0%} taken'}")
